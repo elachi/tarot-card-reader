@@ -32,17 +32,19 @@ if draw_cards:
 if st.session_state.selected_cards:
     st.subheader("Your Tarot Reading:")
     cols = st.columns(len(st.session_state.selected_cards))
-    for i, (filename, orientation) in enumerate(zip(st.session_state.selected_cards, st.session_state.orientations)):
-        meta = card_metadata.get(filename, {})
-        title = meta.get("title", filename.replace("_", " ").title())
-        meaning = meta.get(orientation, meta.get("description", "No description available."))
+    if len(st.session_state.selected_cards) == 1:
+    cols = [st.columns([1, 2, 1])[1]]
+elif len(st.session_state.selected_cards) == 3:
+    cols = st.columns(3)
+else:
+    cols = [st.container() for _ in st.session_state.selected_cards]
 
-        if len(st.session_state.selected_cards) == 1:
-            col = st.columns([1, 2, 1])[1]
-        else:
-            col = st.columns(len(st.session_state.selected_cards))[i]
+for i, (filename, orientation) in enumerate(zip(st.session_state.selected_cards, st.session_state.orientations)):
+    meta = card_metadata.get(filename, {})
+    title = meta.get("title", filename.replace("_", " ").title())
+    meaning = meta.get(orientation, meta.get("description", "No description available."))
 
-        with col:
+    with cols[i]:
             img_path = os.path.join(image_dir, filename)
             img = Image.open(img_path)
             if orientation == "reversed":
