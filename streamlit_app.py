@@ -37,12 +37,17 @@ if st.session_state.selected_cards:
         title = meta.get("title", filename.replace("_", " ").title())
         meaning = meta.get(orientation, meta.get("description", "No description available."))
 
-        with cols[i]:
+        if len(st.session_state.selected_cards) == 1:
+            col = st.columns([1, 2, 1])[1]
+        else:
+            col = st.columns(len(st.session_state.selected_cards))[i]
+
+        with col:
             img_path = os.path.join(image_dir, filename)
             img = Image.open(img_path)
             if orientation == "reversed":
                 img = img.rotate(180)
-            st.image(img, use_column_width=True)
+            st.image(img, width=200)
             st.markdown(f"### {title}{' (Reversed)' if orientation == 'reversed' else ''}")
             st.markdown(meaning)
 
