@@ -18,35 +18,49 @@ deck = [f for f in os.listdir(image_dir) if f.endswith(".png")]
 
 total_cards = st.radio("How many cards would you like to draw?", [1, 3])
 
-draw_cards = st.button("🔁 Draw Cards")
+if "selected_cards" not in st.session_state:
+    st.session_state.selected_cards = []
+    st.session_state.orientations = []
 
+draw_cards = st.button("🔁 Draw Cards")
 if draw_cards:
     seed = random.random() * 143 * DAY * MONTH * YEAR
     random.seed(seed)
-    selected_cards = random.sample(deck, total_cards)
-    orientations = [random.choice(["upright", "reversed"]) for _ in selected_cards] if total_cards == 1 else ["upright"] * total_cards
+    st.session_state.selected_cards = random.sample(deck, total_cards)
+    st.session_state.orientations = [random.choice(["upright", "reversed"]) for _ in st.session_state.selected_cards] if total_cards == 1 else ["upright"] * total_cards
 
-    for i, filename in enumerate(selected_cards):
+if st.session_state.selected_cards:
+    st.subheader("Your Tarot Reading:")
+    cols = st.columns(len(st.session_state.selected_cards))
+    for i, (filename, orientation) in enumerate(zip(st.session_state.selected_cards, st.session_state.orientations)):
         meta = card_metadata.get(filename, {})
         title = meta.get("title", filename.replace("_", " ").title())
-        orientation = orientations[i]
-        meaning = meta.get(orientation, meta.get("description", ""))
+        meaning = meta.get(orientation, meta.get("description", "No description available."))
 
-        col = st.columns(total_cards)[i]
-        with col:
+        with cols[i]:
             img_path = os.path.join(image_dir, filename)
             img = Image.open(img_path)
             if orientation == "reversed":
                 img = img.rotate(180)
             st.image(img, use_column_width=True)
             st.markdown(f"### {title}{' (Reversed)' if orientation == 'reversed' else ''}")
-            st.markdown(f"{meaning}")
+            st.markdown(meaning)
+
+    if len(st.session_state.selected_cards) < 4:
+        if st.button("🃏 Draw Clarifier Card"):
+            remaining = list(set(deck) - set(st.session_state.selected_cards))
+            if remaining:
+                random.shuffle(remaining)
+                clarifier = remaining[0]
+                st.session_state.selected_cards.append(clarifier)
+                st.session_state.orientations.append("upright")
+                st.experimental_rerun()
 
     with st.expander("Click to view full card metadata"):
-        for filename in selected_cards:
+        for filename in st.session_state.selected_cards:
             meta = card_metadata.get(filename, {})
             st.markdown(f"**{meta.get('title', filename)}**")
-            st.markdown(f"- **Upright:** {meta.get('upright', '-')}")
+            st.markdown(f"- **Upright:** {meta.get('upright', meta.get('description', '-'))}")
             st.markdown(f"- **Reversed:** {meta.get('reversed', '-')}")
             st.markdown(f"- **Zodiac:** {meta.get('zodiac', '-')}")
             st.markdown(f"- **Element:** {meta.get('element', '-')}")
