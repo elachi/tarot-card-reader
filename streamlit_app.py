@@ -132,7 +132,7 @@ if st.session_state.clarifier_drawn and st.session_state.clarifier_card:
         st.image(os.path.join(image_dir, clarifier), width=200)
         st.markdown(f"### {title}")
         st.markdown(meaning)
-
+ 
 # Show full metadata
 with st.expander("Click to view full card metadata"):
     for filename in st.session_state.selected_cards:
