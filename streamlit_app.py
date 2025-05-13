@@ -4,6 +4,7 @@ from PIL import Image
 import os
 from card_metadata import card_metadata
 
+
 # Constants
 DAY = 21
 MONTH = 5
