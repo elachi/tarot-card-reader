@@ -2,6 +2,7 @@ import streamlit as st
 import random
 from PIL import Image
 import os
+import time
 from card_metadata import card_metadata
 
 
@@ -59,7 +60,12 @@ if reset_game:
 # Draw new cards
 if draw_cards:
     st.session_state.draw_triggered = True
-    seed = random.random() * 143 * DAY * MONTH * YEAR
+    timestamp = int(time.time() * 1000)  # Milliseconds
+    entropy = int.from_bytes(os.urandom(4), "big")
+    seed = timestamp ^ entropy  # XOR for added randomness
+
+    
+    # seed = random.random() * 143 * DAY * MONTH * YEAR
     random.seed(seed)
     deck_copy = deck[:]
     random.shuffle(deck_copy)
