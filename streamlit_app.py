@@ -58,19 +58,34 @@ if reset_game:
 
 # Draw new cards
 if draw_cards:
+    # Mark that a draw has been triggered
     st.session_state.draw_triggered = True
-    seed = random.random() * 143 * DAY * MONTH * YEAR
+
+    # Generate a strong, unpredictable seed
+    timestamp = int(time.time() * 1000)  # current time in milliseconds
+    entropy = int.from_bytes(os.urandom(4), "big")  # secure random bits
+    seed = timestamp ^ entropy  # combine using XOR for extra randomness
+
+    # Seed the random number generator with the unpredictable seed
     random.seed(seed)
+
+    # Copy and shuffle the deck
     deck_copy = deck[:]
     random.shuffle(deck_copy)
+
+    # Store the shuffled deck and initialize the draw state
     st.session_state.shuffled_deck = deck_copy
     st.session_state.deck_pointer = 0
     st.session_state.selected_cards = deck_copy[:total_cards]
     st.session_state.deck_pointer += total_cards
+
+    # Determine orientation (only one card might be reversed)
     st.session_state.orientations = [
         "reversed" if random.random() < 0.3 else "upright"
         for _ in st.session_state.selected_cards
     ] if total_cards == 1 else ["upright"] * total_cards
+
+    # Reset any clarifier or final card logic
     st.session_state.clarifier_drawn = False
     st.session_state.clarifier_card = None
     st.session_state.final_card_revealed = False
